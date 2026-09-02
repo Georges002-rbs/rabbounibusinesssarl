@@ -13,7 +13,3 @@ services:
         generateValue: true
       - key: STORAGE_DIR
         value: /tmp/storage
-    disk:
-      name: rabbouni-data
-      mountPath: /opt/render/project/src/storage
-      sizeGB: 1
