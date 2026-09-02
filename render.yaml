@@ -2,7 +2,7 @@ services:
   - type: web
     name: rabbouni-business-sarl
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: pnpm install --frozen-lockfile
     startCommand: pnpm start
     healthCheckPath: /api/jobs
@@ -12,7 +12,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: STORAGE_DIR
-        value: /opt/render/project/src/storage
+        value: /tmp/storage
     disk:
       name: rabbouni-data
       mountPath: /opt/render/project/src/storage
