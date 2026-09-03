@@ -94,7 +94,7 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center text-xs text-gray-500 pt-6 border-t border-blue-900">
-          © {new Date().getFullYear()} Rabbouni Business SARL. Tous droits réservés.
+          &copy; {new Date().getFullYear()} Rabbouni Business SARL. Tous droits réservés.
         </div>
       </footer>
 
