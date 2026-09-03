@@ -1,5 +1,5 @@
 'use client'
-import { usestate } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function Home() {
@@ -94,7 +94,7 @@ export default function Home() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Secteur d'activité / Poste</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Secteur d&apos;activité / Poste</label>
           <input
             type="text"
             required
