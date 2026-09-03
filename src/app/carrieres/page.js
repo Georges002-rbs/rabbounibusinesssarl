@@ -1,76 +1,141 @@
-import Link from 'next/link';
+'use client'
+import { usestate } from 'react'
+import { supabase } from '@/lib/supabase'
 
-export default function CarrieresPage() {
-  const offres = [
-    {
-      id: 1,
-      titre: "Agent Administratif & Réceptionniste",
-      secteur: "Ressources Humaines",
-      lieu: "Kinshasa",
-      type: "CDI",
-      description: "Accueil des clients, gestion des appels et traitement des documents administratifs."
-    },
-    {
-      id: 2,
-      titre: "Technicien Support Informatique",
-      secteur: "Informatique & Télécoms",
-      lieu: "Kinshasa",
-      type: "CDI",
-      description: "Maintenance du parc informatique, gestion des réseaux et assistance aux utilisateurs."
-    },
-    {
-      id: 3,
-      titre: "Superviseur de Chantier",
-      secteur: "Génie Civil & BTP",
-      lieu: "Kinshasa / Provinces",
-      type: "CDD",
-      description: "Suivi des travaux de construction et coordination des équipes sur le terrain."
+export default function Home() {
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', sector: '' })
+  const [file, setFile] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    try {
+      let cvUrl = ''
+
+      if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}_${Math.random()}.${fileExt}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('cv_files')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: urlData } = supabase.storage
+          .from('cv_files')
+          .getPublicUrl(fileName)
+
+        cvUrl = urlData.publicUrl
+      }
+
+      const { error: insertError } = await supabase.from('candidates').insert([
+        {
+          full_name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          sector: formData.sector,
+          cv_url: cvUrl
+        }
+      ])
+
+      if (insertError) throw insertError
+
+      setMessage('Candidature envoyée avec succès !')
+      setFormData({ fullName: '', email: '', phone: '', sector: '' })
+      setFile(null)
+    } catch (err) {
+      setMessage(`Erreur lors de l'envoi : ${err.message}`)
+    } finally {
+      setLoading(false)
     }
-  ];
+  }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-6">
-      <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* En-tête */}
-        <div className="text-center space-y-2">
-          <Link href="/" className="text-sm font-semibold text-orange-600 hover:underline">
-            &larr; Retour à l&apos;accueil
-          </Link>
-          <h1 className="text-3xl font-extrabold text-blue-900 uppercase">
-            Portail de Recrutement
-          </h1>
-          <p className="text-gray-600">
-            Rejoignez les équipes de la Société Rabbouni Business SARL.
-          </p>
+    <main style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>Rabbouni Business SARL - Recrutement</h1>
+      <p>Déposez votre candidature en remplissant le formulaire ci-dessous.</p>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Nom complet</label>
+          <input
+            type="text"
+            required
+            value={formData.fullName}
+            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
+          />
         </div>
 
-        {/* Liste des Offres */}
-        <div className="grid gap-6">
-          {offres.map((offre) => (
-            <div key={offre.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="space-y-2">
-                <div className="flex gap-2 items-center">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded">
-                    {offre.secteur}
-                  </span>
-                  <span className="bg-orange-100 text-orange-800 text-xs font-bold px-2.5 py-0.5 rounded">
-                    {offre.type}
-                  </span>
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">{offre.titre}</h2>
-                <p className="text-sm text-gray-500">&#128205; {offre.lieu}</p>
-                <p className="text-sm text-gray-700">{offre.description}</p>
-              </div>
-
-              <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-lg transition whitespace-nowrap">
-                Postuler maintenant
-              </button>
-            </div>
-          ))}
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Adresse Email</label>
+          <input
+            type="email"
+            required
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
+          />
         </div>
 
-      </div>
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Téléphone</label>
+          <input
+            type="tel"
+            required
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Secteur d'activité / Poste</label>
+          <input
+            type="text"
+            required
+            value={formData.sector}
+            onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Curriculum Vitae (PDF ou Word, Max 10 Mo)</label>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            required
+            onChange={(e) => setFile(e.target.files[0])}
+            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '12px',
+            backgroundColor: '#0070f3',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Envoi en cours...' : 'Soumettre ma candidature'}
+        </button>
+      </form>
+
+      {message && (
+        <p style={{ marginTop: '20px', fontWeight: 'bold', color: message.includes('succès') ? 'green' : 'red' }}>
+          {message}
+        </p>
+      )}
     </main>
-  );
+  )
 }
