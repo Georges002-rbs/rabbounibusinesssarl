@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-export default function Home() {
+export default function CarrieresPage() {
   const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', sector: '' })
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -55,13 +55,13 @@ export default function Home() {
   }
 
   return (
-    <main style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>Rabbouni Business SARL - Recrutement</h1>
-      <p>Déposez votre candidature en remplissant le formulaire ci-dessous.</p>
+    <main style={{ maxWidth: '650px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>Rabbouni Business SARL - Carrières</h1>
+      <p>Déposez votre candidature spontanée ou postulez à nos offres à Kinshasa.</p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Nom complet</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nom complet</label>
           <input
             type="text"
             required
@@ -72,7 +72,7 @@ export default function Home() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Adresse Email</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Adresse Email</label>
           <input
             type="email"
             required
@@ -83,7 +83,7 @@ export default function Home() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Téléphone</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Téléphone</label>
           <input
             type="tel"
             required
@@ -94,7 +94,7 @@ export default function Home() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Secteur d&apos;activité / Poste</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Secteur d'activité / Poste visé</label>
           <input
             type="text"
             required
@@ -105,7 +105,7 @@ export default function Home() {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Curriculum Vitae (PDF ou Word, Max 10 Mo)</label>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Curriculum Vitae (PDF ou Word, Max 10 Mo)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx"
@@ -124,7 +124,8 @@ export default function Home() {
             color: '#fff',
             border: 'none',
             borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '16px'
           }}
         >
           {loading ? 'Envoi en cours...' : 'Soumettre ma candidature'}
