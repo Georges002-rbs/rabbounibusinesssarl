@@ -1,5 +1,8 @@
 'use client';
+
 import { useState } from 'react';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -11,172 +14,193 @@ export default function ContactPage() {
   });
 
   const [statut, setStatut] = useState(null);
+  const [chargement, setChargement] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatut('Envoi en cours...');
-    setTimeout(() => {
-      setStatut('Votre message a été envoyé avec succès ! Notre équipe vous recontactera rapidement.');
-      setFormData({ nom: '', email: '', telephone: '', sujet: 'Renseignements Généraux', message: '' });
-    }, 1000);
+    setChargement(true);
+    setStatut(null);
+
+    try {
+      // Envoi des données dans Supabase (table candidates ou contacts)
+      const { error } = await supabase.from('candidates').insert([
+        {
+          full_name: formData.nom,
+          email: formData.email,
+          phone: formData.telephone,
+          message: `[Sujet: ${formData.sujet}] ${formData.message}`
+        }
+      ]);
+
+      if (error) throw error;
+
+      setStatut({
+        type: 'succes',
+        message: 'Votre message a été envoyé avec succès ! Nos équipes vous recontacteront sous peu.'
+      });
+
+      // Réinitialisation du formulaire
+      setFormData({
+        nom: '',
+        email: '',
+        telephone: '',
+        sujet: 'Renseignements Généraux',
+        message: ''
+      });
+    } catch (err) {
+      console.error(err);
+      setStatut({
+        type: 'erreur',
+        message: 'Une erreur est survenue lors de l\'envoi. Veuillez réessayer.'
+      });
+    } finally {
+      setChargement(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 font-sans text-gray-800">
-      
-      {/* Banner */}
-      <section className="bg-blue-900 text-white py-16 px-6 text-center">
-        <h1 className="text-4xl font-extrabold uppercase tracking-wide">Contactez-nous</h1>
-        <p className="mt-3 text-lg text-orange-300 max-w-2xl mx-auto">
-          Besoin d&apos;un renseignement ou d&apos;un devis ? L&apos;équipe de Rabbouni Business SARL est à votre écoute.
-        </p>
-      </section>
-
-      {/* Section Contenu */}
-      <section className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          
-          {/* Coordonnées */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-blue-900 border-b pb-3">Nos Coordonnées</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-orange-500 text-white p-3 rounded-lg text-xl">📍</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Adresse</h3>
-                  <p className="text-gray-600 text-sm">Kinshasa, République Démocratique du Congo</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="bg-orange-500 text-white p-3 rounded-lg text-xl">📞</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Téléphone</h3>
-                  <p className="text-gray-600 text-sm">+243 81 00 00 000 / +243 99 00 00 000</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="bg-orange-500 text-white p-3 rounded-lg text-xl">✉️</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Adresse E-mail</h3>
-                  <p className="text-gray-600 text-sm">contact@rabbounibusiness.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="bg-orange-500 text-white p-3 rounded-lg text-xl">🕒</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Heures d&apos;ouverture</h3>
-                  <p className="text-gray-600 text-sm">Lundi - Vendredi : 08h00 - 17h00</p>
-                  <p className="text-gray-600 text-sm">Samedi : 08h00 - 12h30</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-900 text-white p-6 rounded-xl mt-6">
-              <h3 className="font-bold text-lg text-orange-300">Société Rabbouni Business SARL</h3>
-              <p className="text-sm mt-2 text-gray-200">
-                Fondée par M. KILUBA NTUMBA Ezéchiel. Un partenaire multisectoriel de confiance pour tous vos projets.
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#0f172a] text-white flex flex-col justify-between p-6 md:p-12">
+      {/* Header */}
+      <header className="flex justify-between items-center max-w-7xl mx-auto w-full py-4 border-b border-gray-800">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-bold text-black">
+            R
           </div>
-
-          {/* Formulaire */}
-          <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
-            <h2 className="text-2xl font-bold text-blue-900 mb-6">Envoyez-nous un message</h2>
-
-            {statut && (
-              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm font-semibold">
-                {statut}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-                <input 
-                  type="text" 
-                  name="nom" 
-                  required 
-                  value={formData.nom} 
-                  onChange={handleChange} 
-                  className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-900 outline-none" 
-                  placeholder="Ex: Jean Mukendi"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-                  <input 
-                    type="email" 
-                    name="email" 
-                    required 
-                    value={formData.email} 
-                    onChange={handleChange} 
-                    className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-900 outline-none" 
-                    placeholder="nom@exemple.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-                  <input 
-                    type="tel" 
-                    name="telephone" 
-                    value={formData.telephone} 
-                    onChange={handleChange} 
-                    className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-900 outline-none" 
-                    placeholder="+243..."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
-                <select 
-                  name="sujet" 
-                  value={formData.sujet} 
-                  onChange={handleChange} 
-                  className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-900 outline-none"
-                >
-                  <option value="Renseignements Généraux">Renseignements Généraux</option>
-                  <option value="Demande de Devis">Demande de Devis</option>
-                  <option value="Partenariat / Affaires">Partenariat / Affaires</option>
-                  <option value="Services de Bureautique">Services de Bureautique</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea 
-                  name="message" 
-                  rows="4" 
-                  required 
-                  value={formData.message} 
-                  onChange={handleChange} 
-                  className="w-full p-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-900 outline-none" 
-                  placeholder="Écrivez votre message ici..."
-                ></textarea>
-              </div>
-
-              <button 
-                type="submit" 
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition shadow-md"
-              >
-                Envoyer le Message
-              </button>
-            </form>
+          <div>
+            <h1 className="font-bold text-sm tracking-wider uppercase">Rabbouni</h1>
+            <p className="text-xs text-gray-400">BUSINESS SARL</p>
           </div>
-
         </div>
-      </section>
 
-    </main>
+        <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
+          <Link href="/" className="hover:text-white transition">Accueil</Link>
+          <Link href="/a-propos" className="hover:text-white transition">À propos</Link>
+          <Link href="/services" className="hover:text-white transition">Services</Link>
+          <Link href="/sieges" className="hover:text-white transition">Sièges</Link>
+          <Link href="/galerie" className="hover:text-white transition">Galerie</Link>
+          <Link href="/carrieres" className="hover:text-white transition">Carrières</Link>
+          <Link href="/contact" className="hover:text-white transition text-orange-400 font-semibold">Contact</Link>
+        </nav>
+
+        <Link 
+          href="/mon-espace" 
+          className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition"
+        >
+          Mon espace
+        </Link>
+      </header>
+
+      {/* Main Form Section */}
+      <main className="max-w-4xl mx-auto w-full py-12">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-5xl font-serif text-white mb-4">Contactez-nous</h2>
+          <p className="text-gray-400 max-w-lg mx-auto">
+            Une question ou un projet ? Laissez-nous un message et notre équipe vous répondra dans les plus brefs délais.
+          </p>
+        </div>
+
+        {statut && (
+          <div className={`p-4 mb-6 rounded-lg border ${
+            statut.type === 'succes' 
+              ? 'bg-green-950/60 border-green-500 text-green-200' 
+              : 'bg-red-950/60 border-red-500 text-red-200'
+          }`}>
+            {statut.message}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="bg-gray-900/50 border border-gray-800 p-8 rounded-xl space-y-6 backdrop-blur-sm">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Nom complet *</label>
+              <input
+                type="text"
+                name="nom"
+                required
+                value={formData.nom}
+                onChange={handleChange}
+                placeholder="Votre nom"
+                className="w-full bg-slate-800/80 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Email *</label>
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="exemple@domaine.com"
+                className="w-full bg-slate-800/80 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 transition"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Téléphone</label>
+              <input
+                type="tel"
+                name="telephone"
+                value={formData.telephone}
+                onChange={handleChange}
+                placeholder="+243..."
+                className="w-full bg-slate-800/80 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Sujet</label>
+              <select
+                name="sujet"
+                value={formData.sujet}
+                onChange={handleChange}
+                className="w-full bg-slate-800/80 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 transition"
+              >
+                <option value="Renseignements Généraux">Renseignements Généraux</option>
+                <option value="Demande de Partenariat">Demande de Partenariat</option>
+                <option value="Demande de Devis">Demande de Devis</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Message *</label>
+            <textarea
+              name="message"
+              required
+              rows="5"
+              value={formData.message}
+              onChange={handleChange}
+              placeholder="Écrivez votre message ici..."
+              className="w-full bg-slate-800/80 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-orange-500 transition"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            disabled={chargement}
+            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-800 text-white font-medium py-3.5 rounded-lg transition"
+          >
+            {chargement ? 'Envoi en cours...' : 'Envoyer le message'}
+          </button>
+        </form>
+      </main>
+
+      {/* Footer minimaliste */}
+      <footer className="text-center text-xs text-gray-500 py-4 border-t border-gray-800">
+        © {new Date().getFullYear()} Rabbouni Business SARL. Tous droits réservés.
+      </footer>
+    </div>
   );
 }
