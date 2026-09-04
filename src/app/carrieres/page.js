@@ -1,142 +1,90 @@
-'use client'
-import { useState } from 'react'
-import { supabase } from '../../lib/supabase'
-
 export default function CarrieresPage() {
-  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', sector: '' })
-  const [file, setFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-
-    try {
-      let cvUrl = ''
-
-      if (file) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}_${Math.random()}.${fileExt}`
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('cv_files')
-          .upload(fileName, file)
-
-        if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage
-          .from('cv_files')
-          .getPublicUrl(fileName)
-
-        cvUrl = urlData.publicUrl
-      }
-
-      const { error: insertError } = await supabase.from('candidates').insert([
-        {
-          full_name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          sector: formData.sector,
-          cv_url: cvUrl
-        }
-      ])
-
-      if (insertError) throw insertError
-
-      setMessage('Candidature envoyée avec succès !')
-      setFormData({ fullName: '', email: '', phone: '', sector: '' })
-      setFile(null)
-    } catch (err) {
-      setMessage(`Erreur lors de l'envoi : ${err.message}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <main style={{ maxWidth: '650px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>Rabbouni Business SARL - Carrières</h1>
-      <p>Déposez votre candidature spontanée ou postulez à nos offres à Kinshasa.</p>
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nom complet</label>
-          <input
-            type="text"
-            required
-            value={formData.fullName}
-            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
-          />
+    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* En-tête de la page */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+            Rejoignez Rabbouni Business SARL
+          </h1>
+          <p className="mt-4 text-xl text-gray-600">
+            Développez votre potentiel et construisez votre avenir au sein de notre équipe.
+          </p>
         </div>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Adresse Email</label>
-          <input
-            type="email"
-            required
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
-          />
+        {/* Section Nos Valeurs / Pourquoi nous rejoindre */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Pourquoi travailler avec nous ?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div className="p-4 border border-gray-100 rounded-lg bg-blue-50/50">
+              <h3 className="font-semibold text-lg text-blue-900 mb-2">Innovation</h3>
+              <p className="text-sm text-gray-600">Nous encourageons les nouvelles idées et l'initiative personnelle.</p>
+            </div>
+            <div className="p-4 border border-gray-100 rounded-lg bg-blue-50/50">
+              <h3 className="font-semibold text-lg text-blue-900 mb-2">Croissance</h3>
+              <p className="text-sm text-gray-600">Opportunités de formation continue et d'évolution professionnelle.</p>
+            </div>
+            <div className="p-4 border border-gray-100 rounded-lg bg-blue-50/50">
+              <h3 className="font-semibold text-lg text-blue-900 mb-2">Collaboration</h3>
+              <p className="text-sm text-gray-600">Un environnement de travail bienveillant et axé sur l'esprit d'équipe.</p>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Téléphone</label>
-          <input
-            type="tel"
-            required
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
-          />
+        {/* Section Offres d'emploi / Candidature spontanée */}
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Candidature Spontanée</h2>
+          <p className="text-gray-600 mb-6">
+            Nous sommes toujours à la recherche de nouveaux talents. Si aucune offre ne correspond directement à votre profil, envoyez-nous votre candidature.
+          </p>
+
+          <form className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
+                <input 
+                  type="text" 
+                  placeholder="Votre nom" 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Adresse Email</label>
+                <input 
+                  type="email" 
+                  placeholder="votre.email@exemple.com" 
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Poste convoité</label>
+              <input 
+                type="text" 
+                placeholder="Ex: Développeur, Chef de projet..." 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message / Lettre de motivation</label>
+              <textarea 
+                rows="4" 
+                placeholder="Présentez-vous en quelques lignes..." 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              ></textarea>
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow transition-colors duration-200"
+            >
+              Envoyer ma candidature
+            </button>
+          </form>
         </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Secteur d'activité / Poste visé</label>
-          <input
-            type="text"
-            required
-            value={formData.sector}
-            onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Curriculum Vitae (PDF ou Word, Max 10 Mo)</label>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            required
-            onChange={(e) => setFile(e.target.files[0])}
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: '12px',
-            backgroundColor: '#0070f3',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '16px'
-          }}
-        >
-          {loading ? 'Envoi en cours...' : 'Soumettre ma candidature'}
-        </button>
-      </form>
-
-      {message && (
-        <p style={{ marginTop: '20px', fontWeight: 'bold', color: message.includes('succès') ? 'green' : 'red' }}>
-          {message}
-        </p>
-      )}
+      </div>
     </main>
-  )
+  );
 }
