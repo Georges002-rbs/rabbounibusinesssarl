@@ -10,30 +10,21 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <head>
-        {/* Chargement du moteur de style Tailwind CSS */}
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
         
-        {/* En-tête officiel clair */}
+        {/* En-tête clair officiel */}
         <header className="bg-amber-50/95 text-gray-800 border-b border-amber-200/60 sticky top-0 z-50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
-            {/* Logo officiel & Identité */}
+            {/* Logo officiel (.jpg) & Identité */}
             <Link href="/" className="flex items-center gap-3">
               <img 
-                src="/logo.png" 
+                src="/logo.jpg" 
                 alt="Logo Rabbouni Business SARL" 
-                className="w-12 h-12 object-contain"
-                onError={(e) => {
-                  // Repli visuel si logo.png n'est pas encore ajouté dans le dossier public
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextSibling.style.display = 'flex';
-                }}
+                className="w-12 h-12 object-contain rounded-md"
               />
-              <div className="hidden w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500 items-center justify-center font-bold text-amber-600 text-xl shadow-sm">
-                R
-              </div>
               <div>
                 <span className="font-extrabold text-amber-700 tracking-wide text-sm sm:text-base block leading-none">
                   RABBOUNI BUSINESS <span className="text-orange-600 text-xs font-semibold">SARL</span>
@@ -72,7 +63,7 @@ export default function RootLayout({ children }) {
           </div>
         </header>
 
-        {/* Zone de contenu des pages */}
+        {/* Zone de contenu */}
         <div className="flex-grow">
           {children}
         </div>
