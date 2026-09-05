@@ -68,7 +68,7 @@ export default function ContactPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* BLOC VOS COORDONNÉES EXACTES */}
+        {/* BLOC COORDONNÉES */}
         <div className="bg-slate-800/90 p-6 rounded-xl border border-slate-700 space-y-6">
           <h2 className="text-xl font-bold text-amber-400 border-b border-slate-700 pb-2">
             Nos Coordonnées
@@ -99,64 +99,76 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* FORMULAIRE DE MESSAGE */}
+        {/* FORMULAIRE AVEC LABELS ET PLACEHOLDERS CLAIRS */}
         <div className="md:col-span-2 bg-slate-800/80 p-6 rounded-xl border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4">Envoyez-nous un message</h2>
+          <h2 className="text-xl font-bold text-white mb-6">Envoyez-nous un message</h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold mb-1 text-slate-300">Nom complet *</label>
+                <label className="block text-sm font-semibold mb-1.5 text-amber-400">
+                  Nom complet *
+                </label>
                 <input
                   type="text"
                   name="nom"
                   required
+                  placeholder="Ex: Georges Mulamba"
                   value={formData.nom}
                   onChange={handleChange}
-                  className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1 text-slate-300">Adresse Email *</label>
+                <label className="block text-sm font-semibold mb-1.5 text-amber-400">
+                  Adresse Email *
+                </label>
                 <input
                   type="email"
                   name="email"
                   required
+                  placeholder="Ex: exemple@gmail.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 text-slate-300">Sujet *</label>
+              <label className="block text-sm font-semibold mb-1.5 text-amber-400">
+                Sujet du message *
+              </label>
               <input
                 type="text"
                 name="sujet"
                 required
+                placeholder="Ex: Demande de renseignement, Retard de livraison..."
                 value={formData.sujet}
                 onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1 text-slate-300">Message *</label>
+              <label className="block text-sm font-semibold mb-1.5 text-amber-400">
+                Votre Message *
+              </label>
               <textarea
                 name="message"
                 rows="5"
                 required
+                placeholder="Rédigez votre message ici..."
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
               ></textarea>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-md transition duration-200 text-sm shadow disabled:opacity-50"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-lg transition duration-200 text-sm shadow disabled:opacity-50"
             >
               {loading ? 'Envoi en cours...' : 'Envoyer le message'}
             </button>
