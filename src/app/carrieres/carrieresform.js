@@ -17,17 +17,12 @@ export default function CarrieresForm() {
     phone: '',
     position: '',
   });
-  const [file, setFile] = useState(null);
+  const [cvFile, setCvFile] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -41,24 +36,45 @@ export default function CarrieresForm() {
       }
 
       let cvUrl = null;
+      let photoUrl = null;
 
-      if (file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      // Upload du CV
+      if (cvFile) {
+        const fileExt = cvFile.name.split('.').pop();
+        const fileName = `cv_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadCvError } = await supabase.storage
           .from('cv_files')
-          .upload(fileName, file);
+          .upload(fileName, cvFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadCvError) throw uploadCvError;
 
-        const { data: urlData } = supabase.storage
+        const { data: urlCvData } = supabase.storage
           .from('cv_files')
           .getPublicUrl(fileName);
 
-        cvUrl = urlData.publicUrl;
+        cvUrl = urlCvData.publicUrl;
       }
 
+      // Upload de la Photo passeport
+      if (photoFile) {
+        const photoExt = photoFile.name.split('.').pop();
+        const photoName = `photo_${Date.now()}_${Math.random().toString(36).substring(2)}.${photoExt}`;
+
+        const { error: uploadPhotoError } = await supabase.storage
+          .from('cv_files')
+          .upload(photoName, photoFile);
+
+        if (uploadPhotoError) throw uploadPhotoError;
+
+        const { data: urlPhotoData } = supabase.storage
+          .from('cv_files')
+          .getPublicUrl(photoName);
+
+        photoUrl = urlPhotoData.publicUrl;
+      }
+
+      // Enregistrement dans Supabase
       const { error: insertError } = await supabase
         .from('candidates')
         .insert([
@@ -68,6 +84,7 @@ export default function CarrieresForm() {
             phone: formData.phone,
             position: formData.position,
             cv_url: cvUrl,
+            photo_url: photoUrl,
           },
         ]);
 
@@ -75,7 +92,8 @@ export default function CarrieresForm() {
 
       alert('Votre candidature a été envoyée avec succès !');
       setFormData({ full_name: '', email: '', phone: '', position: '' });
-      setFile(null);
+      setCvFile(null);
+      setPhotoFile(null);
     } catch (err) {
       console.error('Erreur Supabase :', err);
       alert('Une erreur est survenue lors de l’envoi. Veuillez réessayer.');
@@ -155,16 +173,30 @@ export default function CarrieresForm() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-amber-400">
-            Joindre votre CV (PDF ou DOCX)
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleFileChange}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Joindre votre CV (PDF ou DOCX)
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => e.target.files?.[0] && setCvFile(e.target.files[0])}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Photo passeport (JPG, PNG)
+            </label>
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              onChange={(e) => e.target.files?.[0] && setPhotoFile(e.target.files[0])}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none"
+            />
+          </div>
         </div>
 
         <button
