@@ -1,231 +1,183 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialisation du client Supabase
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function CarrieresPage() {
-  const [offres, setOffres] = useState([]);
   const [formData, setFormData] = useState({
     nom: '',
     email: '',
     telephone: '',
     poste: '',
     message: '',
-    cv: null,
-    photo: null
   });
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(null);
 
-  // Charger les offres d'emploi ajoutées via le tableau de bord /admin
-  useEffect(() => {
-    const savedOffres = localStorage.getItem('rabbouni_offres');
-    if (savedOffres) {
-      setOffres(JSON.parse(savedOffres));
-    }
-  }, []);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleFileChange = (e, field) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, [field]: file }));
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Merci ${formData.nom} ! Votre candidature avec CV (${formData.cv ? formData.cv.name : 'Non joint'}) et photo a bien été transmise.`);
-    setFormData({
-      nom: '',
-      email: '',
-      telephone: '',
-      poste: '',
-      message: '',
-      cv: null,
-      photo: null
-    });
-  };
+    setLoading(true);
+    setStatus(null);
 
-  const postulerAOffre = (titrePoste) => {
-    setFormData((prev) => ({ ...prev, poste: titrePoste }));
-    const formElement = document.getElementById('formulaire-candidature');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth' });
+    try {
+      let cvUrl = null;
+
+      // 1. Upload du CV dans Supabase Storage
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('fichiers CV')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Récupération de l'URL publique
+        const { data: publicUrlData } = supabase.storage
+          .from('fichiers CV')
+          .getPublicUrl(filePath);
+
+        cvUrl = publicUrlData.publicUrl;
+      }
+
+      // 2. Enregistrement des données de la candidature dans la base de données
+      const { error: dbError } = await supabase
+        .from('candidatures')
+        .insert([
+          {
+            nom: formData.nom,
+            email: formData.email,
+            telephone: formData.telephone,
+            poste: formData.poste,
+            message: formData.message,
+            cv_url: cvUrl,
+          },
+        ]);
+
+      if (dbError) throw dbError;
+
+      setStatus({ type: 'success', text: 'Votre candidature a été envoyée avec succès !' });
+      setFormData({ nom: '', email: '', telephone: '', poste: '', message: '' });
+      setFile(null);
+    } catch (error) {
+      console.error('Erreur lors de l’envoi :', error);
+      setStatus({ type: 'error', text: 'Une erreur est survenue lors de l’envoi. Réessayez.' });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-12 space-y-12">
-      
-      {/* SECTION 1: OFFRES D'EMPLOI DISPONIBLES */}
-      <div className="space-y-6">
-        <div className="border-b border-slate-800 pb-4">
-          <span className="text-xs font-bold text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20 inline-block mb-2">
-            Opportunités
-          </span>
-          <h1 className="text-3xl font-serif font-bold text-white">Offres d'Emploi Récentes</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Consultez nos postes ouverts et postulez directement ci-dessous.
-          </p>
+    <main className="max-w-4xl mx-auto px-6 py-12">
+      <h1 className="text-3xl font-extrabold text-amber-500 mb-6 text-center">
+        Rejoignez RABBOUNI BUSINESS SARL
+      </h1>
+
+      {status && (
+        <div className={`p-4 mb-6 rounded-md text-sm font-semibold ${
+          status.type === 'success' ? 'bg-green-800/50 text-green-200 border border-green-600' : 'bg-red-800/50 text-red-200 border border-red-600'
+        }`}>
+          {status.text}
         </div>
+      )}
 
-        {offres.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-slate-400 text-sm">
-            Aucune offre spécifique n'est publiée pour le moment. Vous pouvez soumettre une candidature spontanée ci-dessous.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {offres.map((item) => (
-              <div key={item.id} className="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between space-y-4 shadow-lg">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <h2 className="text-xl font-bold text-white">{item.titre}</h2>
-                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 whitespace-nowrap">
-                      {item.lieu || 'Kinshasa'}
-                    </span>
-                  </div>
-                  <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-line">
-                    {item.description}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => postulerAOffre(item.titre)}
-                  className="w-full bg-orange-500/20 hover:bg-orange-500 text-orange-400 hover:text-white border border-orange-500/40 font-bold py-2 rounded text-xs transition"
-                >
-                  Postuler à ce poste →
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* SECTION 2: FORMULAIRE DE CANDIDATURE AVEC CV ET PHOTO */}
-      <div id="formulaire-candidature" className="bg-white text-gray-900 rounded-xl p-8 shadow-xl border border-gray-200 space-y-6">
-        <div className="border-b border-gray-200 pb-4">
-          <h2 className="text-2xl font-serif font-bold text-amber-600">Formulaire de Candidature</h2>
-          <p className="text-gray-600 text-sm mt-1">
-            Remplissez vos informations et joignez votre CV ainsi que votre photo.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nom complet */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Nom complet *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Votre nom complet"
-                className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                value={formData.nom}
-                onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-              />
-            </div>
-
-            {/* Adresse Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Adresse Email *
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="votre.email@exemple.com"
-                className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Numéro de Téléphone */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Numéro de Téléphone / WhatsApp *
-              </label>
-              <input
-                type="tel"
-                required
-                placeholder="+243 ..."
-                className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                value={formData.telephone}
-                onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
-              />
-            </div>
-
-            {/* Poste convoité */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Poste convoité *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Ex: Ingénieur BTP, Agent Administratif..."
-                className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
-                value={formData.poste}
-                onChange={(e) => setFormData({ ...formData, poste: e.target.value })}
-              />
-            </div>
-          </div>
-
-          {/* CHAMPS TELEVERSEMENT : CV & PHOTO */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg border border-gray-200">
-            {/* Joindre CV (PDF / DOC) */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Curriculum Vitae (CV) * <span className="text-xs font-normal text-gray-500">(PDF, DOC, DOCX)</span>
-              </label>
-              <input
-                type="file"
-                required
-                accept=".pdf,.doc,.docx"
-                className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600 cursor-pointer"
-                onChange={(e) => handleFileChange(e, 'cv')}
-              />
-            </div>
-
-            {/* Joindre Photo */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Photo de profil / Identité * <span className="text-xs font-normal text-gray-500">(JPG, PNG)</span>
-              </label>
-              <input
-                type="file"
-                required
-                accept="image/*"
-                className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600 cursor-pointer"
-                onChange={(e) => handleFileChange(e, 'photo')}
-              />
-            </div>
-          </div>
-
-          {/* Message / Lettre de motivation */}
+      <form onSubmit={handleSubmit} className="bg-slate-800/80 p-8 rounded-xl border border-slate-700 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Message / Lettre de motivation
-            </label>
-            <textarea
-              rows="4"
-              placeholder="Présentez brièvement vos compétences et votre motivation..."
-              className="w-full bg-white text-gray-900 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none resize-none"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-            ></textarea>
+            <label className="block text-xs font-semibold mb-1 text-slate-300">Nom complet *</label>
+            <input
+              type="text"
+              name="nom"
+              required
+              value={formData.nom}
+              onChange={handleChange}
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+            />
           </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1 text-slate-300">Adresse Email *</label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+            />
+          </div>
+        </div>
 
-          {/* Bouton d'envoi */}
-          <button
-            type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-lg shadow transition"
-          >
-            Envoyer ma candidature complète
-          </button>
-        </form>
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold mb-1 text-slate-300">Téléphone</label>
+            <input
+              type="tel"
+              name="telephone"
+              value={formData.telephone}
+              onChange={handleChange}
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1 text-slate-300">Poste convoité *</label>
+            <input
+              type="text"
+              name="poste"
+              required
+              value={formData.poste}
+              onChange={handleChange}
+              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+            />
+          </div>
+        </div>
 
+        <div>
+          <label className="block text-xs font-semibold mb-1 text-slate-300">Joindre votre CV (PDF ou Word) *</label>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            required
+            onChange={handleFileChange}
+            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-xs text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold mb-1 text-slate-300">Message / Lettre de motivation</label>
+          <textarea
+            name="message"
+            rows="4"
+            value={formData.message}
+            onChange={handleChange}
+            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+          ></textarea>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-md transition duration-200 text-sm shadow disabled:opacity-50"
+        >
+          {loading ? 'Envoi en cours...' : 'Soumettre ma candidature'}
+        </button>
+      </form>
     </main>
   );
 }
