@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <head>
-        {/* Chargement direct du moteur Tailwind CSS */}
+        {/* Moteur Tailwind CSS */}
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
         <header className="bg-amber-50/95 text-gray-800 border-b border-amber-200/60 sticky top-0 z-50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
-            {/* Logo & Nom officiel */}
+            {/* Logo & Identité */}
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500 flex items-center justify-center font-bold text-amber-600 text-xl shadow-sm">
                 R
@@ -32,18 +32,18 @@ export default function RootLayout({ children }) {
               </div>
             </Link>
 
-            {/* Barre de navigation horizontale */}
+            {/* Menu de navigation avec routes indépendantes */}
             <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
               <Link href="/" className="hover:text-amber-600 transition">Accueil</Link>
               <Link href="/apropos" className="hover:text-amber-600 transition">À propos</Link>
               <Link href="/services" className="hover:text-amber-600 transition">Services</Link>
-              <Link href="/#sieges" className="hover:text-amber-600 transition">Sièges</Link>
+              <Link href="/sieges" className="hover:text-amber-600 transition">Sièges</Link>
               <Link href="/galerie" className="hover:text-amber-600 transition">Galerie</Link>
               <Link href="/carrieres" className="hover:text-amber-600 transition">Carrières</Link>
               <Link href="/contact" className="hover:text-amber-600 transition">Contact</Link>
             </nav>
 
-            {/* Boutons d'accès rapide */}
+            {/* Accès rapide Admin & Espace */}
             <div className="flex items-center gap-3">
               <Link 
                 href="/admin" 
@@ -62,16 +62,16 @@ export default function RootLayout({ children }) {
           </div>
         </header>
 
-        {/* Zone de contenu dynamique */}
+        {/* Contenu principal */}
         <div className="flex-grow">
           {children}
         </div>
 
-        {/* Pied de page institutionnel */}
+        {/* Pied de page */}
         <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-6 space-y-2">
             <p className="font-semibold text-slate-300">SOCIETE RABBOUNI BUSINESS SARL</p>
-            <p>© 2026 Tous droits réservés. Kinshasa, République Démocratique du Congo[span_1](start_span)[span_1](end_span).</p>
+            <p>© 2026 Tous droits réservés. Kinshasa, République Démocratique du Congo.</p>
           </div>
         </footer>
 
