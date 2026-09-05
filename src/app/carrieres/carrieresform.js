@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const getSupabaseClient = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+};
 
 export default function CarrieresForm() {
   const [formData, setFormData] = useState({
@@ -32,6 +35,11 @@ export default function CarrieresForm() {
     setLoading(true);
 
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        throw new Error("Les variables Supabase ne sont pas configurées.");
+      }
+
       let cvUrl = null;
 
       if (file) {
