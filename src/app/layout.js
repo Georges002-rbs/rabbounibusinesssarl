@@ -1,27 +1,33 @@
+'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import './globals.css';
 
-export const metadata = {
-  title: 'SOCIETE RABBOUNI BUSINESS SARL',
-  description: 'Des solutions diversifiées, un seul partenaire.',
-};
-
 export default function RootLayout({ children }) {
+  const [customLogo, setCustomLogo] = useState(null);
+
+  useEffect(() => {
+    const savedLogo = localStorage.getItem('rabbouni_logo');
+    if (savedLogo) {
+      setCustomLogo(savedLogo);
+    }
+  }, []);
+
   return (
     <html lang="fr">
       <head>
+        <title>SOCIETE RABBOUNI BUSINESS SARL</title>
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
         
-        {/* En-tête clair officiel */}
+        {/* En-tête avec Logo dynamique */}
         <header className="bg-amber-50/95 text-gray-800 border-b border-amber-200/60 sticky top-0 z-50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
-            {/* Logo officiel (.jpg) & Identité */}
             <Link href="/" className="flex items-center gap-3">
               <img 
-                src="/logo.jpg" 
+                src={customLogo || '/logo.jpg'} 
                 alt="Logo Rabbouni Business SARL" 
                 className="w-12 h-12 object-contain rounded-md"
               />
@@ -33,7 +39,6 @@ export default function RootLayout({ children }) {
               </div>
             </Link>
 
-            {/* Menu de navigation */}
             <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
               <Link href="/" className="hover:text-amber-600 transition">Accueil</Link>
               <Link href="/apropos" className="hover:text-amber-600 transition">À propos</Link>
@@ -44,7 +49,6 @@ export default function RootLayout({ children }) {
               <Link href="/contact" className="hover:text-amber-600 transition">Contact</Link>
             </nav>
 
-            {/* Boutons d'accès direct */}
             <div className="flex items-center gap-3">
               <Link 
                 href="/admin" 
@@ -63,12 +67,10 @@ export default function RootLayout({ children }) {
           </div>
         </header>
 
-        {/* Zone de contenu */}
         <div className="flex-grow">
           {children}
         </div>
 
-        {/* Pied de page */}
         <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-6 space-y-2">
             <p className="font-semibold text-slate-300">SOCIETE RABBOUNI BUSINESS SARL</p>
