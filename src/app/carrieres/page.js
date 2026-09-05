@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialisation du client Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Configuration explicite pour le build
+export const dynamic = 'force-dynamic';
 
 export default function CarrieresPage() {
   const [formData, setFormData] = useState({
@@ -18,6 +16,13 @@ export default function CarrieresPage() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
+
+  // Initialisation sécurisée du client Supabase
+  const getSupabaseClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    return createClient(supabaseUrl, supabaseAnonKey);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,9 +40,10 @@ export default function CarrieresPage() {
     setStatus(null);
 
     try {
+      const supabase = getSupabaseClient();
       let cvUrl = null;
 
-      // 1. Upload du CV dans Supabase Storage
+      // 1. Téléversement du CV dans le bucket Supabase
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -49,7 +55,6 @@ export default function CarrieresPage() {
 
         if (uploadError) throw uploadError;
 
-        // Récupération de l'URL publique
         const { data: publicUrlData } = supabase.storage
           .from('fichiers CV')
           .getPublicUrl(filePath);
@@ -57,7 +62,7 @@ export default function CarrieresPage() {
         cvUrl = publicUrlData.publicUrl;
       }
 
-      // 2. Enregistrement des données de la candidature dans la base de données
+      // 2. Enregistrement en base de données
       const { error: dbError } = await supabase
         .from('candidatures')
         .insert([
