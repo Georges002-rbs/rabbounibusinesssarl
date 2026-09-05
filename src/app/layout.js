@@ -1,10 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import './globals.css';
 
 export default function RootLayout({ children }) {
   const [customLogo, setCustomLogo] = useState(null);
+  const pathname = usePathname(); // Récupère le chemin actif de l'URL
 
   useEffect(() => {
     const savedLogo = localStorage.getItem('rabbouni_logo');
@@ -12,6 +14,17 @@ export default function RootLayout({ children }) {
       setCustomLogo(savedLogo);
     }
   }, []);
+
+  // Liste des liens de navigation
+  const navLinks = [
+    { href: '/', label: 'Accueil' },
+    { href: '/apropos', label: 'À propos' },
+    { href: '/services', label: 'Services' },
+    { href: '/sieges', label: 'Sièges' },
+    { href: '/galerie', label: 'Galerie' },
+    { href: '/carrieres', label: 'Carrières' },
+    { href: '/contact', label: 'Contact' },
+  ];
 
   return (
     <html lang="fr">
@@ -21,10 +34,11 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
         
-        {/* En-tête avec Logo dynamique */}
+        {/* En-tête / Navigation */}
         <header className="bg-amber-50/95 text-gray-800 border-b border-amber-200/60 sticky top-0 z-50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-3">
               <img 
                 src={customLogo || '/logo.jpg'} 
@@ -39,20 +53,35 @@ export default function RootLayout({ children }) {
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
-              <Link href="/" className="hover:text-amber-600 transition">Accueil</Link>
-              <Link href="/apropos" className="hover:text-amber-600 transition">À propos</Link>
-              <Link href="/services" className="hover:text-amber-600 transition">Services</Link>
-              <Link href="/sieges" className="hover:text-amber-600 transition">Sièges</Link>
-              <Link href="/galerie" className="hover:text-amber-600 transition">Galerie</Link>
-              <Link href="/carrieres" className="hover:text-amber-600 transition">Carrières</Link>
-              <Link href="/contact" className="hover:text-amber-600 transition">Contact</Link>
+            {/* Liens de Navigation avec Indicateur de Page Active */}
+            <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`py-1 transition-all duration-200 ${
+                      isActive
+                        ? 'text-orange-600 font-bold border-b-2 border-orange-600'
+                        : 'text-gray-700 hover:text-amber-600'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
 
+            {/* Boutons d'action */}
             <div className="flex items-center gap-3">
               <Link 
                 href="/admin" 
-                className="hidden sm:inline-block text-xs font-bold text-gray-600 hover:text-amber-600 border border-gray-300 px-3 py-2 rounded-md transition"
+                className={`hidden sm:inline-block text-xs font-bold px-3 py-2 rounded-md transition border ${
+                  pathname === '/admin'
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'text-gray-600 hover:text-amber-600 border-gray-300'
+                }`}
               >
                 Admin
               </Link>
@@ -67,10 +96,12 @@ export default function RootLayout({ children }) {
           </div>
         </header>
 
+        {/* Contenu principal */}
         <div className="flex-grow">
           {children}
         </div>
 
+        {/* Pied de page */}
         <footer className="border-t border-slate-800 bg-slate-950 py-8 text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-6 space-y-2">
             <p className="font-semibold text-slate-300">SOCIETE RABBOUNI BUSINESS SARL</p>
