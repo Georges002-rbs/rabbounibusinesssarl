@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Configuration explicite pour le build
+// Configuration pour éviter les erreurs de build lors de l'export statique
 export const dynamic = 'force-dynamic';
 
 export default function CarrieresPage() {
@@ -43,26 +43,27 @@ export default function CarrieresPage() {
       const supabase = getSupabaseClient();
       let cvUrl = null;
 
-      // 1. Téléversement du CV dans le bucket Supabase
+      // 1. Upload du CV dans le bucket Supabase (nom exact : cv_files)
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('fichiers CV')
+          .from('cv_files')
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
+        // Récupération de l'URL publique du fichier
         const { data: publicUrlData } = supabase.storage
-          .from('fichiers CV')
+          .from('cv_files')
           .getPublicUrl(filePath);
 
         cvUrl = publicUrlData.publicUrl;
       }
 
-      // 2. Enregistrement en base de données
+      // 2. Enregistrement de la candidature dans la base de données
       const { error: dbError } = await supabase
         .from('candidatures')
         .insert([
@@ -78,12 +79,17 @@ export default function CarrieresPage() {
 
       if (dbError) throw dbError;
 
+      // Message de succès et réinitialisation des champs du formulaire
       setStatus({ type: 'success', text: 'Votre candidature a été envoyée avec succès !' });
       setFormData({ nom: '', email: '', telephone: '', poste: '', message: '' });
       setFile(null);
+      
+      // Réinitialise le champ fichier HTML
+      e.target.reset();
+
     } catch (error) {
       console.error('Erreur lors de l’envoi :', error);
-      setStatus({ type: 'error', text: 'Une erreur est survenue lors de l’envoi. Réessayez.' });
+      setStatus({ type: 'error', text: 'Une erreur est survenue lors de l’envoi. Veuillez réessayer.' });
     } finally {
       setLoading(false);
     }
