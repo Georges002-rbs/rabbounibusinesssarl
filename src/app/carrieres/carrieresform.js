@@ -56,7 +56,7 @@ export default function CarrieresForm() {
         cvUrl = urlCvData.publicUrl;
       }
 
-      // Upload de la Photo passeport
+      // Upload de la Photo
       if (photoFile) {
         const photoExt = photoFile.name.split('.').pop();
         const photoName = `photo_${Date.now()}_${Math.random().toString(36).substring(2)}.${photoExt}`;
@@ -74,19 +74,22 @@ export default function CarrieresForm() {
         photoUrl = urlPhotoData.publicUrl;
       }
 
-      // Enregistrement dans Supabase
+      // Enregistrement des données dans la table candidates
+      const payload = {
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        position: formData.position,
+        cv_url: cvUrl,
+      };
+
+      if (photoUrl) {
+        payload.photo_url = photoUrl;
+      }
+
       const { error: insertError } = await supabase
         .from('candidates')
-        .insert([
-          {
-            full_name: formData.full_name,
-            email: formData.email,
-            phone: formData.phone,
-            position: formData.position,
-            cv_url: cvUrl,
-            photo_url: photoUrl,
-          },
-        ]);
+        .insert([payload]);
 
       if (insertError) throw insertError;
 
@@ -96,7 +99,7 @@ export default function CarrieresForm() {
       setPhotoFile(null);
     } catch (err) {
       console.error('Erreur Supabase :', err);
-      alert('Une erreur est survenue lors de l’envoi. Veuillez réessayer.');
+      alert(`Erreur lors de l’envoi : ${err.message || 'Vérifiez la console'}`);
     } finally {
       setLoading(false);
     }
