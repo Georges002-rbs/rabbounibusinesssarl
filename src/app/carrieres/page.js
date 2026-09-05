@@ -1,28 +1,21 @@
 'use client';
+
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Configuration pour éviter les erreurs de build lors de l'export statique
-export const dynamic = 'force-dynamic';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function CarrieresPage() {
+export default function CandidaturePage() {
   const [formData, setFormData] = useState({
-    nom: '',
+    full_name: '',
     email: '',
-    telephone: '',
-    poste: '',
-    message: '',
+    phone: '',
+    position: '',
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(null);
-
-  // Initialisation sécurisée du client Supabase
-  const getSupabaseClient = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    return createClient(supabaseUrl, supabaseAnonKey);
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,156 +30,141 @@ export default function CarrieresPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus(null);
 
     try {
-      const supabase = getSupabaseClient();
       let cvUrl = null;
 
-      // 1. Upload du CV dans le bucket Supabase (nom exact : cv_files)
       if (file) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('cv_files')
-          .upload(filePath, file);
+          .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        // Récupération de l'URL publique du fichier
-        const { data: publicUrlData } = supabase.storage
+        const { data: urlData } = supabase.storage
           .from('cv_files')
-          .getPublicUrl(filePath);
+          .getPublicUrl(fileName);
 
-        cvUrl = publicUrlData.publicUrl;
+        cvUrl = urlData.publicUrl;
       }
 
-      // 2. Enregistrement de la candidature dans la base de données
-      const { error: dbError } = await supabase
-        .from('candidatures')
+      const { error: insertError } = await supabase
+        .from('candidates')
         .insert([
           {
-            nom: formData.nom,
+            full_name: formData.full_name,
             email: formData.email,
-            telephone: formData.telephone,
-            poste: formData.poste,
-            message: formData.message,
+            phone: formData.phone,
+            position: formData.position,
             cv_url: cvUrl,
           },
         ]);
 
-      if (dbError) throw dbError;
+      if (insertError) throw insertError;
 
-      // Message de succès et réinitialisation des champs du formulaire
-      setStatus({ type: 'success', text: 'Votre candidature a été envoyée avec succès !' });
-      setFormData({ nom: '', email: '', telephone: '', poste: '', message: '' });
+      alert('Votre candidature a été envoyée avec succès !');
+      setFormData({ full_name: '', email: '', phone: '', position: '' });
       setFile(null);
-      
-      // Réinitialise le champ fichier HTML
-      e.target.reset();
-
-    } catch (error) {
-      console.error('Erreur lors de l’envoi :', error);
-      setStatus({ type: 'error', text: 'Une erreur est survenue lors de l’envoi. Veuillez réessayer.' });
+    } catch (err) {
+      console.error('Erreur Supabase :', err);
+      alert('Une erreur est survenue lors de l’envoi. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-extrabold text-amber-500 mb-6 text-center">
+    <main className="max-w-4xl mx-auto p-6 bg-slate-900 text-white rounded-lg shadow-lg my-10">
+      <h1 className="text-3xl font-bold text-center text-amber-500 mb-8">
         Rejoignez RABBOUNI BUSINESS SARL
       </h1>
 
-      {status && (
-        <div className={`p-4 mb-6 rounded-md text-sm font-semibold ${
-          status.type === 'success' ? 'bg-green-800/50 text-green-200 border border-green-600' : 'bg-red-800/50 text-red-200 border border-red-600'
-        }`}>
-          {status.text}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="bg-slate-800/80 p-8 rounded-xl border border-slate-700 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Nom complet *</label>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Nom complet *
+            </label>
             <input
               type="text"
-              name="nom"
+              name="full_name"
               required
-              value={formData.nom}
+              placeholder="Ex: Jean Dupont"
+              value={formData.full_name}
               onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Adresse Email *</label>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Adresse e-mail *
+            </label>
             <input
               type="email"
               name="email"
               required
+              placeholder="Ex: exemple@gmail.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Téléphone</label>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Numéro de téléphone *
+            </label>
             <input
               type="tel"
-              name="telephone"
-              value={formData.telephone}
+              name="phone"
+              required
+              placeholder="Ex: +243 81 000 0000"
+              value={formData.phone}
               onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Poste convoité *</label>
+            <label className="block text-sm font-semibold mb-2 text-amber-400">
+              Poste souhaité *
+            </label>
             <input
               type="text"
-              name="poste"
+              name="position"
               required
-              value={formData.poste}
+              placeholder="Ex: Informaticien, Comptable..."
+              value={formData.position}
               onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold mb-1 text-slate-300">Joindre votre CV (PDF ou Word) *</label>
+          <label className="block text-sm font-semibold mb-2 text-amber-400">
+            Joindre votre CV (PDF ou DOCX)
+          </label>
           <input
             type="file"
             accept=".pdf,.doc,.docx"
-            required
             onChange={handleFileChange}
-            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-xs text-slate-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none"
           />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-slate-300">Message / Lettre de motivation</label>
-          <textarea
-            name="message"
-            rows="4"
-            value={formData.message}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
-          ></textarea>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-md transition duration-200 text-sm shadow disabled:opacity-50"
+          className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3.5 rounded-lg transition duration-200 text-sm shadow disabled:opacity-50"
         >
-          {loading ? 'Envoi en cours...' : 'Soumettre ma candidature'}
+          {loading ? 'Envoi en cours...' : 'Envoyer ma candidature'}
         </button>
       </form>
     </main>
