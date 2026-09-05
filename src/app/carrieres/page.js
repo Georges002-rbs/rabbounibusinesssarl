@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import CarrieresForm from './CarrieresForm';
+import carrieresform from './carrieresForm';
 
-export default function Page() {
-  return <CarrieresForm />;
+export default function page() {
+  return <carrieresForm />;
 }
