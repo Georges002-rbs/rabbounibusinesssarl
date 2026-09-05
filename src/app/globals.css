@@ -1,3 +1,36 @@
-@tailwindcss base;
-@tailwindcss components;
-@tailwindcss utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Configuration globale de la lisibilité des formulaires */
+@layer base {
+  /* Tous les champs de saisie du site */
+  input, 
+  textarea, 
+  select {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Textes indicatifs (placeholders) */
+  input::placeholder, 
+  textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+  }
+
+  /* Focus sur les champs */
+  input:focus, 
+  textarea:focus, 
+  select:focus {
+    outline: 2px solid #f59e0b !important;
+    border-color: #f59e0b !important;
+  }
+
+  /* Étiquettes au-dessus des champs */
+  label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+  }
+}
