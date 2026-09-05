@@ -31,7 +31,7 @@ export default function ContactPage() {
       const supabase = getSupabaseClient();
       
       const { error } = await supabase
-        .from('messages') // Assurez-vous que le nom de la table correspond à la vôtre
+        .from('messages')
         .insert([
           {
             nom: formData.nom,
@@ -45,7 +45,6 @@ export default function ContactPage() {
 
       alert('Votre message a été envoyé avec succès !');
 
-      // RESET DES CHAMPS DU FORMULAIRE :
       setFormData({
         nom: '',
         email: '',
@@ -62,69 +61,109 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-extrabold text-amber-500 mb-6 text-center">
-        Envoyez-nous un message
+    <main className="max-w-6xl mx-auto px-6 py-12 text-slate-100">
+      <h1 className="text-3xl font-extrabold text-amber-500 mb-8 text-center">
+        Contactez RABBOUNI BUSINESS SARL
       </h1>
 
-      <form onSubmit={handleSubmit} className="bg-slate-800/80 p-8 rounded-xl border border-slate-700 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Nom complet</label>
-            <input
-              type="text"
-              name="nom"
-              required
-              value={formData.nom}
-              onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
-            />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        {/* BLOC VOS COORDONNÉES EXACTES */}
+        <div className="bg-slate-800/90 p-6 rounded-xl border border-slate-700 space-y-6">
+          <h2 className="text-xl font-bold text-amber-400 border-b border-slate-700 pb-2">
+            Nos Coordonnées
+          </h2>
+
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="text-slate-400 font-semibold">Téléphone / WhatsApp :</p>
+              <p className="text-white">+243 821 616 938</p>
+              <p className="text-white">+243 995 629 300</p>
+            </div>
+
+            <div>
+              <p className="text-slate-400 font-semibold">Email :</p>
+              <p className="text-white break-all">rabbounibusinesssarl002@gmail.com</p>
+            </div>
+
+            <div className="pt-2">
+              <p className="text-slate-400 font-semibold mb-2">Nos Réseaux Sociaux :</p>
+              <ul className="space-y-1.5 text-slate-300">
+                <li><span className="font-medium text-amber-400">Facebook :</span> Société Rabbouni Business SARL</li>
+                <li><span className="font-medium text-amber-400">Instagram :</span> Société Rabbouni Business SARL</li>
+                <li><span className="font-medium text-amber-400">YouTube :</span> Société Rabbouni Business SARL</li>
+                <li><span className="font-medium text-amber-400">TikTok :</span> Société Rabbouni Business SARL</li>
+                <li><span className="font-medium text-amber-400">LinkedIn :</span> Société Rabbouni Business SARL</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-slate-300">Adresse Email</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
-            />
-          </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-slate-300">Sujet</label>
-          <input
-            type="text"
-            name="sujet"
-            required
-            value={formData.sujet}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
-          />
+        {/* FORMULAIRE DE MESSAGE */}
+        <div className="md:col-span-2 bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+          <h2 className="text-xl font-bold text-white mb-4">Envoyez-nous un message</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1 text-slate-300">Nom complet *</label>
+                <input
+                  type="text"
+                  name="nom"
+                  required
+                  value={formData.nom}
+                  onChange={handleChange}
+                  className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1 text-slate-300">Adresse Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-slate-300">Sujet *</label>
+              <input
+                type="text"
+                name="sujet"
+                required
+                value={formData.sujet}
+                onChange={handleChange}
+                className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-slate-300">Message *</label>
+              <textarea
+                name="message"
+                rows="5"
+                required
+                value={formData.message}
+                onChange={handleChange}
+                className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-md transition duration-200 text-sm shadow disabled:opacity-50"
+            >
+              {loading ? 'Envoi en cours...' : 'Envoyer le message'}
+            </button>
+          </form>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-slate-300">Message</label>
-          <textarea
-            name="message"
-            rows="5"
-            required
-            value={formData.message}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-orange-500"
-          ></textarea>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-md transition duration-200 text-sm shadow disabled:opacity-50"
-        >
-          {loading ? 'Envoi en cours...' : 'Envoyer le message'}
-        </button>
-      </form>
+      </div>
     </main>
   );
 }
