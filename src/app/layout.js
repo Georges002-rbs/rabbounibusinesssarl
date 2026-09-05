@@ -10,18 +10,28 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <head>
-        {/* Moteur Tailwind CSS */}
+        {/* Chargement du moteur de style Tailwind CSS */}
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body className="bg-slate-900 text-white min-h-screen flex flex-col justify-between font-sans">
         
-        {/* En-tête clair officiel */}
+        {/* En-tête officiel clair */}
         <header className="bg-amber-50/95 text-gray-800 border-b border-amber-200/60 sticky top-0 z-50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             
-            {/* Logo & Identité */}
+            {/* Logo officiel & Identité */}
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500 flex items-center justify-center font-bold text-amber-600 text-xl shadow-sm">
+              <img 
+                src="/logo.png" 
+                alt="Logo Rabbouni Business SARL" 
+                className="w-12 h-12 object-contain"
+                onError={(e) => {
+                  // Repli visuel si logo.png n'est pas encore ajouté dans le dossier public
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="hidden w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500 items-center justify-center font-bold text-amber-600 text-xl shadow-sm">
                 R
               </div>
               <div>
@@ -32,7 +42,7 @@ export default function RootLayout({ children }) {
               </div>
             </Link>
 
-            {/* Menu de navigation avec routes indépendantes */}
+            {/* Menu de navigation */}
             <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
               <Link href="/" className="hover:text-amber-600 transition">Accueil</Link>
               <Link href="/apropos" className="hover:text-amber-600 transition">À propos</Link>
@@ -43,7 +53,7 @@ export default function RootLayout({ children }) {
               <Link href="/contact" className="hover:text-amber-600 transition">Contact</Link>
             </nav>
 
-            {/* Accès rapide Admin & Espace */}
+            {/* Boutons d'accès direct */}
             <div className="flex items-center gap-3">
               <Link 
                 href="/admin" 
@@ -62,7 +72,7 @@ export default function RootLayout({ children }) {
           </div>
         </header>
 
-        {/* Contenu principal */}
+        {/* Zone de contenu des pages */}
         <div className="flex-grow">
           {children}
         </div>
